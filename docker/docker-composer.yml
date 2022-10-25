@@ -1,0 +1,35 @@
+version: "3.6"
+
+networks:
+  rede_docker:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.5.0.0/16
+
+services:
+  phpfpm:
+    image: "bitnami/php-fpm"
+    container_name: phpfpm
+    networks:
+      rede_docker:
+        ipv4_address: 10.5.0.4
+    volumes:
+      - ../:/app
+      - ./custom.ini:/opt/bitnami/php/etc/conf.d/custom.ini
+
+  nginx:
+    image: "bitnami/nginx:latest"
+    container_name: nginx
+    depends_on:
+      - phpfpm
+    networks:
+      rede_docker:
+        ipv4_address: 10.5.0.5
+    volumes:
+      - ../:/app
+      - ./server_block.conf:/opt/bitnami/nginx/conf/server_blocks/server_block.conf
+    ports:
+      - "8080:8080"
+      - "443:443"
